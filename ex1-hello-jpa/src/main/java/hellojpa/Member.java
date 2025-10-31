@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
-
 
 @Getter
 @Setter
@@ -17,6 +15,7 @@ public class Member {
     //
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO) // 5가지 전략이 있음
+    @Column(name ="MEMBER_ID")
 //    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "member_sqe_generator")
     // AUTO, TABLE, UUID, SEQUENCE, IDENTITY
     // AUTO, JPA가 사용하는 DB dialec에 따라 선택 H2/MySql identity, oracle sequence 사용
@@ -29,11 +28,16 @@ public class Member {
     //           ㄴ->initalValue와 allocation을 통해서 2번만 가져오고 allocation수까지는 memoey에서 increase하는 전략
     // TABLE -> 별도의 키 전용 테이블을 만들어 PK값 관리
     // UUID -> 하이버네이트 6부터 추가된 전략으로, UUID(묹자열)로 키 생성
-
     private String id;
 
-    @Column(name="name", nullable = false)
-    private String username;
+    @Column(name="USERNAME")
+    private String userName;
+
+//    @Column(name ="ITEM_ID")
+//    private Long teamId;
+    @ManyToOne // 여러명의 멤버는 하나의 팀에만 소속가능, 보통 FK가지고 있는 테이블이 ManyToOne에서 Many임
+    @JoinColumn(name="TEAM_ID") // 해당 속성을 FK로 만들건데 이름을 TEAM_ID로 지정할거임! -> 관리할거야!
+    private Team team;
 
 //    @Id
 //    @GeneratedValue
@@ -62,5 +66,11 @@ public class Member {
 
 
     public Member() {
+    }
+
+    // 연관관계 생성 메소드
+    public void changeTeam(Team team){
+        this.team = team;
+        team.getMembers().add(this);
     }
 }

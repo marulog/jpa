@@ -2,6 +2,8 @@ package hellojpa;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 public class JpaMain {
 
     public static void main(String[] args) {
@@ -77,10 +79,40 @@ public class JpaMain {
 //            em.persist(member);
 
             //  기본키
+//            Member member = new Member();
+//            member.setId("ID_A");
+//            member.setUsername("A");
+//            em.persist(member);
+
+            // 단방향 연관관계
+            Team team = new Team();
+            team.setName("TeamA");
+            em.persist(team); // INSERT문 바로 나감!
+
             Member member = new Member();
-            member.setId("ID_A");
-            member.setUsername("A");
-            em.persist(member);
+            member.setUserName("member1");
+            member.changeTeam(team); // 1차 캐시에서 가져옴 Member -> Team 관계 설정
+            em.persist(member); // INSERT문 바로 나감
+
+//            team.getMembers().add(member); // Team -> Member 관계 설정
+            // 즉 2번 참조 설정을 만들어아됨 -> 연관관계 편의 메소드를 생성하자
+
+//            em.flush();
+//            em.clear();// sql 임시 저장소 초기화
+
+            // ManyToOne -> 즉시 로딩임, team객체가 존재하거나, 1차 캐시에 있으면 바로 반환
+            Member findMember = em.find(Member.class, member.getId()); //1차 캐시
+            // OneToMany -> 지연 로딩임, 이 리스트가 필요할 때 까지 DB 조회 안함
+            // 현재 객체 자체는 존재하지만 비어있음 -> 조회할 필요가 없음 -> select 쿼리 안날림
+            List<Member> members = findMember.getTeam().getMembers();
+
+
+            System.out.println("======");
+            for (Member m : members) {
+                System.out.println("m.getUserName() = " + m.getUserName());
+            }
+            System.out.println("======");
+            
 
             tx.commit();
         } catch (Exception e) {
